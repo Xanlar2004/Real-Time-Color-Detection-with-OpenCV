@@ -11,6 +11,11 @@
      1. Real-Time Color Detection: Tracks colors in live video feeds.<br>
      2. HSV Tuning: Adjustable HSV sliders to isolate colors dynamically.<br>
      3. Applications: Supports robotics, AR, and automated color-based tracking.<br></p>
+
+  <h2>Requirements</h2>
+  <p>Python Libraries:<br>
+     - Numpy: For numerical computation and handling large arrays.<br>
+     - cv2 (OpenCV): For image processing and video feed handling.<br></p>
   
   <h2>Installation and Running the Code</h2>
   <p>To set up the environment:<br>
