@@ -2,7 +2,7 @@
 <html>
 
 <head>
-  <h1>Real Time Color Detection with OpenCV</h1>
+  <h1>Real-Time Color Detection with OpenCV</h1>
 </head>
 
 <body>
