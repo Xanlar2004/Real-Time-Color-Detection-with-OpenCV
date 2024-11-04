@@ -1,47 +1,69 @@
 import cv2
 import numpy as np
 
-frameWidth = 640
-frameHeight = 480
-cap = cv2.VideoCapture(1)
-cap.set(3, frameWidth)
-cap.set(4, frameHeight)
+# Set the dimensions of the video frame
+frame_width = 640
+frame_height = 480
 
-def empty(a):
+# Capture video from the specified camera (1)
+video_capture = cv2.VideoCapture(1)
+video_capture.set(3, frame_width)
+video_capture.set(4, frame_height)
+
+# Function that does nothing; used as a placeholder for trackbar callback
+def placeholder_function(x):
     pass
 
-cv2.namedWindow("HSV")
-cv2.resizeWindow("HSV", 640, 240)
-cv2.createTrackbar("HUE Min", "HSV", 0, 179, empty)
-cv2.createTrackbar("HUE Max", "HSV", 179, 179, empty)
-cv2.createTrackbar("SAT Min", "HSV", 0, 255, empty)
-cv2.createTrackbar("SAT Max", "HSV", 255, 255, empty)
-cv2.createTrackbar("VALUE Min", "HSV", 0, 255, empty)
-cv2.createTrackbar("VALUE Max", "HSV", 255, 255, empty)
+# Create a window for HSV trackbars
+cv2.namedWindow("HSV Control")
+cv2.resizeWindow("HSV Control", frame_width, frame_height // 2)
 
+# Create trackbars for adjusting HSV values
+cv2.createTrackbar("HUE Low", "HSV Control", 0, 179, placeholder_function)
+cv2.createTrackbar("HUE High", "HSV Control", 179, 179, placeholder_function)
+cv2.createTrackbar("SAT Low", "HSV Control", 0, 255, placeholder_function)
+cv2.createTrackbar("SAT High", "HSV Control", 255, 255, placeholder_function)
+cv2.createTrackbar("VAL Low", "HSV Control", 0, 255, placeholder_function)
+cv2.createTrackbar("VAL High", "HSV Control", 255, 255, placeholder_function)
+
+# Main loop for video processing
 while True:
-    _, img = cap.read()
-    imgHsv = cv2.cvtColor(img, cv2.COLOR_BGR2HSV)
-
-    h_min = cv2.getTrackbarPos("HUE Min", "HSV")
-    h_max = cv2.getTrackbarPos("HUE Max", "HSV")
-    s_min = cv2.getTrackbarPos("SAT Min", "HSV")
-    s_max = cv2.getTrackbarPos("SAT Max", "HSV")
-    v_min = cv2.getTrackbarPos("VALUE Min", "HSV")
-    v_max = cv2.getTrackbarPos("VALUE Max", "HSV")
-    print(h_min)
-
-    lower = np.array([h_min, s_min, v_min])
-    upper = np.array([h_max, s_max, v_max])
-    mask = cv2.inRange(imgHsv, lower, upper)
-    result = cv2.bitwise_and(img, img, mask=mask)
-
-    mask = cv2.cvtColor(mask, cv2.COLOR_GRAY2BGR)
-    hStack = np.hstack([img, mask, result])
-
-    cv2.imshow('Horizontal Stacking', hStack)
-    if cv2.waitKey(1) &amp; 0xFF == ord('q'):
+    ret, frame = video_capture.read()
+    if not ret:
         break
 
-cap.release()
+    # Convert the captured frame from BGR to HSV
+    hsv_image = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)
+
+    # Retrieve the current values from the trackbars
+    h_low = cv2.getTrackbarPos("HUE Low", "HSV Control")
+    h_high = cv2.getTrackbarPos("HUE High", "HSV Control")
+    s_low = cv2.getTrackbarPos("SAT Low", "HSV Control")
+    s_high = cv2.getTrackbarPos("SAT High", "HSV Control")
+    v_low = cv2.getTrackbarPos("VAL Low", "HSV Control")
+    v_high = cv2.getTrackbarPos("VAL High", "HSV Control")
+
+    # Define the lower and upper bounds for the HSV mask
+    lower_bound = np.array([h_low, s_low, v_low])
+    upper_bound = np.array([h_high, s_high, v_high])
+    
+    # Create a mask and apply it to the original frame
+    mask = cv2.inRange(hsv_image, lower_bound, upper_bound)
+    masked_result = cv2.bitwise_and(frame, frame, mask=mask)
+
+    # Convert the mask to BGR for display
+    mask_colored = cv2.cvtColor(mask, cv2.COLOR_GRAY2BGR)
+    
+    # Stack the original image, mask, and result horizontally
+    stacked_images = np.hstack([frame, mask_colored, masked_result])
+
+    # Display the stacked images
+    cv2.imshow('Stacked Output', stacked_images)
+    
+    # Exit the loop if 'q' is pressed
+    if cv2.waitKey(1) & 0xFF == ord('q'):
+        break
+
+# Release the video capture and close all OpenCV windows
+video_capture.release()
 cv2.destroyAllWindows()
